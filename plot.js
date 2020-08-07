@@ -1,3 +1,23 @@
+// Creates a dropdown menu of ID numbers dynamically.
+// Function is both declared and called in plots.js.
+function init() {
+    // Select the dropdown menu, which has an id of #selDataset
+    var selector = d3.select("#selDataset");
+  
+    // Read the data from samples.json. The data from the entire file is assigned the data argument
+    d3.json("samples.json").then((data) => {
+      console.log(data);
+      var sampleNames = data.names;
+      sampleNames.forEach((sample) => {
+        selector
+          .append("option")
+          .text(sample)
+          .property("value", sample);
+    });
+})};
+  
+init();
+
 // This function is only called by the onchange attribute of the dropdown menu in index.html
 // newSample refers to the value of the selected menu option. In index.html, onchange=optionChanged(this.value) passes the selected menu option’s value
 // to the optionChanged() function. This function gives this information the argument name newSample. In other words, this.value and newSample are equivalent.
@@ -27,60 +47,68 @@ function buildMetadata(sample) {
     });
 }
 
-function buildCharts(sample) {
-    // Create axis arrays
-    var yData = [];
-    var yAxis = [];
-    var hoverText = [];
-    
+function buildCharts(sample) { 
     // Pulls in the entire json dataset and refers to it as data
     d3.json("samples.json").then((data) => {  
         // The samples array in the dataset (data.samples) is assigned the variable samples.
         var samples = data.samples;
         // Filter data based on ID saved in sample
         var resultArray = samples.filter(sampleObj => sampleObj.id == sample);
-        // Sort the Array of arrays 
-        var sortedArray = resultArray.samples_values.sort((a,b) => {b-a});
-        // Slice array to show top 10
-        var filteredArray = sortedArray.samples_values.slice(0,10);
+        // First item in the array is selected and assigned to the variable
+        var result = resultArray[0];
 
-        // Assign values from filtered array to chart axis values
-        xData = filteredArray.samples_values
-        yaxis = filteredArray.otu_ids
-        hoverText = filteredArray.otu_labels
-    )};
+        // Create variable for each type of needed data
+        var ids = result.otu_ids;
+        var labels = result.otu_labels;
+        var sampleValues = result.sample_values;
 
-    // Create bar chart
-    var trace = {
-        y: [yData],
-        type: "bar",
-        text: [hoverText]
-    };
+        // Define bar chart variables
+        var yLabels = ids.slice(0,10).map(otuID => "OTU ${otuID}").reverse();
+        var barData = [
+            {
+                x: sampleValues.slice(0,10).reverse(),
+                y: yLabels,
+                type: "bar",
+                text: labels.slice(0,10).reverse(),
+                orientation: "h",
+            }
+        ];
 
-    var layout = {
-        title: "Top 10 Bacterial Species",
-        xaxis: {title: "Amount Present in Sample"},
-        yaxis: {yAxis}
-    };
-    Plotly.newPlot("bar",[trace],layout);
-};
+        // Define bar layout
+        var barLayout = {
+            title: "Top 10 Bacterial Species",
+            xaxis: {title: "Amount Present in Sample"},
+            margin: {t:30, 1:150}
+        };
+        
+        // Create bar chart
+        Plotly.newPlot("bar",barData,barLayout);
 
-// Creates a dropdown menu of ID numbers dynamically.
-// Function is both declared and called in plots.js.
-function init() {
-    // Select the dropdown menu, which has an id of #selDataset
-    var selector = d3.select("#selDataset");
-  
-    // Read the data from samples.json. The data from the entire file is assigned the data argument
-    d3.json("samples.json").then((data) => {
-      console.log(data);
-      var sampleNames = data.names;
-      sampleNames.forEach((sample) => {
-        selector
-          .append("option")
-          .text(sample)
-          .property("value", sample);
+        // Define bubble chart variables
+        var bubbleData = [
+            {
+                x: ids,
+                y: sampleValues,
+                text: labels,
+                mode: "markers",
+                marker: {
+                    size: sampleValues,
+                    color: ids
+                }
+
+            }
+        ];
+
+        // Define bubble layout
+        var bubbleLayout = {
+            title: "Bacteria Cultures Per Sample",
+            margin: {t:0},
+            hovermode: "closest",
+            xaxis: {title: "OTU ID"},
+            margin: {t:30}
+        };
+
+        // Create bubble chart
+        Plotly.newPlot("bubble", bubbleData, bubbleLayout);
     });
-})}
-  
-init();
+}
