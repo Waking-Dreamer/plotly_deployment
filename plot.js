@@ -63,7 +63,7 @@ function buildCharts(sample) {
         var sampleValues = result.sample_values;
 
         // Define bar chart variables
-        var yLabels = ids.slice(0,10).map(otuID => "OTU ${otuID}").reverse();
+        var yLabels = ids.slice(0,10).map(otuID => "OTU " + otuID).reverse();
         var barData = [
             {
                 x: sampleValues.slice(0,10).reverse(),
@@ -77,8 +77,7 @@ function buildCharts(sample) {
         // Define bar layout
         var barLayout = {
             title: "Top 10 Bacterial Species",
-            xaxis: {title: "Amount Present in Sample"},
-            margin: {t:30, 1:150}
+            xaxis: {title: "Amount Present in Sample"}
         };
         
         // Create bar chart
@@ -102,10 +101,8 @@ function buildCharts(sample) {
         // Define bubble layout
         var bubbleLayout = {
             title: "Bacteria Cultures Per Sample",
-            margin: {t:0},
             hovermode: "closest",
-            xaxis: {title: "OTU ID"},
-            margin: {t:30}
+            xaxis: {title: "OTU ID"}
         };
 
         // Create bubble chart
